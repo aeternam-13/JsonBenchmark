@@ -1,8 +1,6 @@
 package com.aeternam.jsonbenchmark.presentation.request_creator_screen
 
-import android.graphics.drawable.Icon
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
@@ -17,8 +15,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.Icon
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aeternam.jsonbenchmark.presentation.request_creator_screen.screens.RequestScreenGatheringInfo
@@ -30,16 +28,18 @@ fun RequestScreen(
 ) {
 
     val state by viewmodel.state.collectAsStateWithLifecycle()
+    val currentState = state
 
     Scaffold(
         floatingActionButton = {
-            FloatingActionButton(onClick = {})
-            {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Default.Send,
-                    contentDescription = "Save note"
-                )
-            }
+            if (currentState is RequestScreenState.GatheringInfo)
+                FloatingActionButton(onClick = {}, containerColor = MaterialTheme.colorScheme.primary)
+                {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Default.Send,
+                        contentDescription = "Save note"
+                    )
+                }
         },
         topBar = {
             TopAppBar(
@@ -54,15 +54,22 @@ fun RequestScreen(
         ) { innerPadding ->
         Column(
             modifier = Modifier
-                .padding(innerPadding)
+                .padding(innerPadding).padding(all = 16.dp)
 
         ) {
-            when (val currentState = state) {
+            when (currentState) {
                 is RequestScreenState.GatheringInfo -> RequestScreenGatheringInfo(
                     stateHolder = currentState.stateHolder,
                     onRequestAmountChange = { newAmount ->
                         viewmodel.onIntent(
                             RequestScreenIntent.RequestAmountChange(newAmount)
+                        )
+                    },
+                    onRequestModeChange = { mode ->
+                        viewmodel.onIntent(
+                            RequestScreenIntent.ChangeRequestMode(
+                                mode
+                            )
                         )
                     })
 
