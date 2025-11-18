@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.Icon
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -28,11 +29,15 @@ fun RequestScreen(
 ) {
 
     val state by viewmodel.state.collectAsStateWithLifecycle()
-    val currentState = state
+    val stateHolder = rememberRequestScreenStateHolder()
+
+    LaunchedEffect(state) {
+
+    }
 
     Scaffold(
         floatingActionButton = {
-            if (currentState is RequestScreenState.GatheringInfo)
+            if (state is RequestScreenState.GatheringInfo)
                 FloatingActionButton(onClick = {}, containerColor = MaterialTheme.colorScheme.primary)
                 {
                     Icon(
@@ -54,24 +59,15 @@ fun RequestScreen(
         ) { innerPadding ->
         Column(
             modifier = Modifier
-                .padding(innerPadding).padding(all = 16.dp)
+                .padding(innerPadding)
+                .padding(all = 16.dp)
 
         ) {
-            when (currentState) {
+            when (state) {
                 is RequestScreenState.GatheringInfo -> RequestScreenGatheringInfo(
-                    stateHolder = currentState.stateHolder,
-                    onRequestAmountChange = { newAmount ->
-                        viewmodel.onIntent(
-                            RequestScreenIntent.RequestAmountChange(newAmount)
-                        )
-                    },
-                    onRequestModeChange = { mode ->
-                        viewmodel.onIntent(
-                            RequestScreenIntent.ChangeRequestMode(
-                                mode
-                            )
-                        )
-                    })
+                    stateHolder = stateHolder,
+                    onRequestAmountChange = { newAmount -> stateHolder.onAmount(newAmount) },
+                    onRequestModeChange = { mode -> stateHolder.onModeChange(mode) })
 
                 is RequestScreenState.Loading -> TODO()
             }
