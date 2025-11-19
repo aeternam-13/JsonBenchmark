@@ -1,4 +1,4 @@
-package com.aeternam.jsonbenchmark.presentation.request_creator_screen
+package com.aeternam.jsonbenchmark.presentation
 
 sealed class RequestScreenState {
     data class GatheringInfo(val stateHolder: RequestScreenStateHolder) : RequestScreenState()

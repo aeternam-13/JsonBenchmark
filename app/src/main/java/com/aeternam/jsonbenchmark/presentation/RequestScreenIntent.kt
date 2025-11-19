@@ -1,6 +1,6 @@
-package com.aeternam.jsonbenchmark.presentation.request_creator_screen
+package com.aeternam.jsonbenchmark.presentation
 
-import com.aeternam.jsonbenchmark.model.RequestMode
+import com.aeternam.jsonbenchmark.domain.model.RequestMode
 
 sealed class RequestScreenIntent {
     data class SendRequests(val amount: String, val requestMode: RequestMode) :

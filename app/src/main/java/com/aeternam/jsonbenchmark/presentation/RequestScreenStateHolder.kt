@@ -1,4 +1,4 @@
-package com.aeternam.jsonbenchmark.presentation.request_creator_screen
+package com.aeternam.jsonbenchmark.presentation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
@@ -6,7 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import com.aeternam.jsonbenchmark.model.RequestMode
+import com.aeternam.jsonbenchmark.domain.model.RequestMode
 
 
 @Composable

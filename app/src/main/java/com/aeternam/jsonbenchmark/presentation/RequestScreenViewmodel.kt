@@ -1,19 +1,22 @@
-package com.aeternam.jsonbenchmark.presentation.request_creator_screen
+package com.aeternam.jsonbenchmark.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.aeternam.jsonbenchmark.model.RequestMode
+import com.aeternam.jsonbenchmark.domain.model.RequestMode
+import com.aeternam.jsonbenchmark.domain.repository.RequestDispatcherRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class RequestScreenViewmodel @Inject constructor() : ViewModel() {
+class RequestScreenViewmodel @Inject constructor(
+    val repository: RequestDispatcherRepository
+) : ViewModel() {
     private val _state =
         MutableStateFlow<RequestScreenState>(RequestScreenState.GatheringInfo(stateHolder = RequestScreenStateHolder()))
     val state = _state.asStateFlow()
@@ -38,7 +41,10 @@ class RequestScreenViewmodel @Inject constructor() : ViewModel() {
     }
 
     private fun optimalPath(){
-        viewModelScope.launch {  }
+        viewModelScope.launch(Dispatchers.IO) {
+            val results = repository.optimalFlow()
+
+        }
     }
 
     private fun slowerPath(){

@@ -1,4 +1,4 @@
-package com.aeternam.jsonbenchmark.presentation.request_creator_screen
+package com.aeternam.jsonbenchmark.presentation.screens
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -20,7 +20,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.aeternam.jsonbenchmark.presentation.request_creator_screen.screens.RequestScreenGatheringInfo
+import com.aeternam.jsonbenchmark.presentation.RequestScreenState
+import com.aeternam.jsonbenchmark.presentation.RequestScreenViewmodel
+import com.aeternam.jsonbenchmark.presentation.rememberRequestScreenStateHolder
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

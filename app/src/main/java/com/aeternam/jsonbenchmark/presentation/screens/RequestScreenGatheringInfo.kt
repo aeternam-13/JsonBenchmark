@@ -1,12 +1,10 @@
-package com.aeternam.jsonbenchmark.presentation.request_creator_screen.screens
+package com.aeternam.jsonbenchmark.presentation.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SegmentedButton
@@ -17,8 +15,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.aeternam.jsonbenchmark.model.RequestMode
-import com.aeternam.jsonbenchmark.presentation.request_creator_screen.RequestScreenStateHolder
+import com.aeternam.jsonbenchmark.domain.model.RequestMode
+import com.aeternam.jsonbenchmark.presentation.RequestScreenStateHolder
 
 @Composable
 fun RequestScreenGatheringInfo(
@@ -37,7 +35,6 @@ fun RequestScreenGatheringInfo(
             style = MaterialTheme.typography.bodyMedium
         )
         Spacer(Modifier.height(16.dp))
-
         OutlinedTextField(
             value = stateHolder.requestAmount,
             label = { Text("Requests to perform") },
