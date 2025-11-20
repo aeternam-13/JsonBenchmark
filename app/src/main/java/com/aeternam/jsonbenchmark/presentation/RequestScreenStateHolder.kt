@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.aeternam.jsonbenchmark.domain.model.RequestMode
+import com.aeternam.jsonbenchmark.domain.model.Results
 
 
 @Composable
@@ -22,12 +23,25 @@ class RequestScreenStateHolder {
     var requestMode: RequestMode by mutableStateOf(RequestMode.OPTIMAL)
         private set
 
-    fun onAmount(newAmount: String) {
-        requestAmount = newAmount
+    var results: Results by mutableStateOf(Results())
+        private set
+
+    fun onAmountChange(amount: String) {
+        this.requestAmount = amount
     }
 
-    fun onModeChange(newMode: RequestMode) {
-        requestMode = newMode
+    fun onResultsChange(results: Results) {
+        this.results = results
+    }
+
+    fun onModeChange(requestMode: RequestMode) {
+        this.requestMode = requestMode
+    }
+
+    fun clean() {
+        results = Results()
+        requestMode = RequestMode.OPTIMAL
+        requestAmount = ""
     }
 
 }

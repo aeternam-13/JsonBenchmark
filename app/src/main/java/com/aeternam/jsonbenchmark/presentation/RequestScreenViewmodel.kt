@@ -18,7 +18,7 @@ class RequestScreenViewmodel @Inject constructor(
     val repository: RequestDispatcherRepository
 ) : ViewModel() {
     private val _state =
-        MutableStateFlow<RequestScreenState>(RequestScreenState.GatheringInfo(stateHolder = RequestScreenStateHolder()))
+        MutableStateFlow<RequestScreenState>(RequestScreenState.GatheringInfo)
     val state = _state.asStateFlow()
 
     private val _uiEvent = MutableSharedFlow<RequestScreenState>()
@@ -26,9 +26,8 @@ class RequestScreenViewmodel @Inject constructor(
 
     fun onIntent(intent: RequestScreenIntent) {
         when (intent) {
-            is RequestScreenIntent.SendRequests -> {
-                sendRequest(intent.requestMode)
-            }
+            is RequestScreenIntent.SendRequests -> sendRequest(intent.requestMode)
+            is RequestScreenIntent.BackToSend -> _state.value = RequestScreenState.GatheringInfo
         }
     }
 
@@ -40,10 +39,10 @@ class RequestScreenViewmodel @Inject constructor(
         }
     }
 
-    private fun optimalPath(){
+    private fun optimalPath() {
         viewModelScope.launch(Dispatchers.IO) {
             val results = repository.optimalFlow()
-
+            _state.value = RequestScreenState.ShowResults(results = results)
         }
     }
 

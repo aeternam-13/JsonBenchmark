@@ -7,17 +7,24 @@ class RequestDispatcherRepositoryImpl(
     val api : RequestDispatcherApi
 ) : RequestDispatcherRepository {
     override suspend fun optimalFlow(): Results {
-        val response = api.optimalPost()
-
         val results = Results(0, 0, listOf())
 
-        if (response.isSuccessful) {
-            val result = response.body()
+        runCatching {
+            val response = api.optimalPost()
 
-            result.let {
+            if (response.isSuccessful) {
+                val result = response.body()
 
+                result.let {
+
+                }
+            }else{
+                println("something went wrong")
             }
-        }
+        }.onFailure { error ->
+            println("murio por " + error.toString())
+         }
+
 
         return results
     }

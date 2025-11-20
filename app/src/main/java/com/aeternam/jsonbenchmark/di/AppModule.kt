@@ -3,7 +3,6 @@ package com.aeternam.jsonbenchmark.di
 import com.aeternam.jsonbenchmark.data.RequestDispatcherApi
 import com.aeternam.jsonbenchmark.data.RequestDispatcherRepositoryImpl
 import com.aeternam.jsonbenchmark.domain.repository.RequestDispatcherRepository
-import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -31,7 +30,7 @@ object AppModule {
         return retrofit.create(RequestDispatcherApi::class.java)
     }
 
-    @Binds
+    @Provides
     @Singleton
     fun provideRequestDispatcherRepository(apiService: RequestDispatcherApi): RequestDispatcherRepository {
         return RequestDispatcherRepositoryImpl(apiService)
