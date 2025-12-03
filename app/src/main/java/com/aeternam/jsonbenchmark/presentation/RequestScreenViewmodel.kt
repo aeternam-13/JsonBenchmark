@@ -26,30 +26,33 @@ class RequestScreenViewmodel @Inject constructor(
 
     fun onIntent(intent: RequestScreenIntent) {
         when (intent) {
-            is RequestScreenIntent.SendRequests -> sendRequest(intent.requestMode)
+            is RequestScreenIntent.SendRequests -> sendRequest(
+                intent.requestMode,
+                intent.amount.toInt()
+            )
+
             is RequestScreenIntent.BackToSend -> _state.value = RequestScreenState.GatheringInfo
         }
     }
 
-    private fun sendRequest(requestMode: RequestMode) {
+    private fun sendRequest(requestMode: RequestMode, requestAmount: Int) {
         _state.value = RequestScreenState.Loading
         when (requestMode) {
-            RequestMode.OPTIMAL -> optimalPath()
+            RequestMode.OPTIMAL -> optimalPath(requestAmount)
             RequestMode.SLOWER -> slowerPath()
         }
     }
 
-    private fun optimalPath() {
+    private fun optimalPath(requestAmount: Int) {
         viewModelScope.launch(Dispatchers.IO) {
-            val results = repository.optimalFlow()
+            val results = repository.optimalFlow(requestAmount = requestAmount)
             _state.value = RequestScreenState.ShowResults(results = results)
         }
     }
 
-    private fun slowerPath(){
+    private fun slowerPath() {
 
     }
-
 
 
 }

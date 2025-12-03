@@ -70,7 +70,6 @@ fun RequestScreen(
         },
         topBar = {
             TopAppBar(
-                modifier = Modifier.,
                 title = { Text("JsonBenchMark", style = MaterialTheme.typography.titleLarge) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,

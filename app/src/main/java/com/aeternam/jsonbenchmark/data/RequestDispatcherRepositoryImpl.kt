@@ -1,35 +1,61 @@
 package com.aeternam.jsonbenchmark.data
 
+import com.aeternam.jsonbenchmark.domain.model.RequestResult
 import com.aeternam.jsonbenchmark.domain.model.Results
 import com.aeternam.jsonbenchmark.domain.repository.RequestDispatcherRepository
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 
 class RequestDispatcherRepositoryImpl(
     val api : RequestDispatcherApi
 ) : RequestDispatcherRepository {
-    override suspend fun optimalFlow(): Results {
-        val results = Results(0, 0, listOf())
-
-        runCatching {
-            val response = api.optimalPost()
-
-            if (response.isSuccessful) {
-                val result = response.body()
-
-                result.let {
-
-                }
-            }else{
-                println("something went wrong")
+    override suspend fun optimalFlow(requestAmount: Int): Results = coroutineScope {
+        val tasks: List<Deferred<RequestResult>> = (1..requestAmount).map { id ->
+            async {
+                val timestamp = (System.currentTimeMillis() / 1000).toInt()
+                runCatching { api.optimalPost() }
+                    .fold(
+                    onSuccess = { response ->
+                        if (response.isSuccessful) {
+                            RequestResult(
+                                id = id,
+                                detail = "Success: ${response.body()}",
+                                timestamp = timestamp,
+                                success = true
+                            )
+                        } else {
+                            RequestResult(
+                                id = id,
+                                detail = "HTTP Error: ${response.code()}",
+                                timestamp = timestamp,
+                                success = false
+                            )
+                        }
+                    },
+                    onFailure = { error ->
+                        RequestResult(
+                            id = id,
+                            detail = "Exception: ${error.localizedMessage}",
+                            timestamp = timestamp,
+                            success = false
+                        )
+                    }
+                )
             }
-        }.onFailure { error ->
-            println("murio por " + error.toString())
-         }
+        }
 
-
-        return results
+        val allResults = tasks.awaitAll()
+        Results(
+            success = allResults.count { it.success },
+            failures = allResults.count { !it.success },
+            requestResult = allResults
+        )
     }
 
-    override suspend fun slowerFlow(): Results {
+    override suspend fun slowerFlow(requestAmount: Int): Results {
         TODO("Not yet implemented")
     }
+
 }
