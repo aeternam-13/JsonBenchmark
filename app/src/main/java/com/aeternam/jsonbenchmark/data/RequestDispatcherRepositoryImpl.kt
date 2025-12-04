@@ -9,60 +9,115 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import android.util.Base64
+import  java.nio.charset.Charset
 
 class RequestDispatcherRepositoryImpl(
-    val api : RequestDispatcherApi
+    val api: RequestDispatcherApi,
+    val gson: Gson = Gson()
 ) : RequestDispatcherRepository {
     override suspend fun optimalFlow(requestAmount: Int): Results = coroutineScope {
-        val gson = Gson()
         val tasks: List<Deferred<RequestResult>> = (1..requestAmount).map { id ->
             async {
                 val timestamp = (System.currentTimeMillis() / 1000).toInt()
                 runCatching { api.optimalPost() }
                     .fold(
-                    onSuccess = { response ->
-                        if (response.isSuccessful) {
-                            response.body()?.let {
-                                val dummyClass = gson.fromJson(it, DummyClass::class.java)
-                                println(dummyClass.foo1)
+                        onSuccess = { response ->
+                            if (response.isSuccessful) {
+                                response.body()?.let {
+                                    val dummyClass = gson.fromJson(it, DummyClass::class.java)
+                                    println(dummyClass.foo1)
+                                }
+                                handleSuccess(id, timestamp)
+                            } else {
+                                handleOnHttpError(id, response.code(), timestamp)
                             }
-                            RequestResult(
-                                id = id,
-                                detail = "Success: ${response.body()}",
-                                timestamp = timestamp,
-                                success = true
-                            )
-                        } else {
-                            RequestResult(
-                                id = id,
-                                detail = "HTTP Error: ${response.code()}",
-                                timestamp = timestamp,
-                                success = false
-                            )
+                        },
+                        onFailure = { error ->
+                            handleFailure(id, timestamp, error)
                         }
-                    },
-                    onFailure = { error ->
-                        RequestResult(
-                            id = id,
-                            detail = "Exception: ${error.localizedMessage}",
-                            timestamp = timestamp,
-                            success = false
-                        )
-                    }
-                )
+                    )
             }
         }
 
-        val allResults = tasks.awaitAll()
-        Results(
+        getResults(tasks.awaitAll())
+    }
+
+    override suspend fun slowerFlow(requestAmount: Int): Results = coroutineScope {
+        val tasks: List<Deferred<RequestResult>> = (1..requestAmount).map { id ->
+            async {
+                val timestamp = (System.currentTimeMillis() / 1000).toInt()
+                runCatching { api.slowerPost() }
+                    .fold(
+                        onSuccess = { response ->
+                            if (response.isSuccessful) {
+                                response.body()?.let {
+                                    val dummyClass = gson.fromJson(it, DummyClass::class.java)
+                                    println(dummyClass.foo1)
+
+                                    val firstDecode =
+                                        Base64.decode(dummyClass.target, Base64.DEFAULT)
+                                    val secondDecode = Base64.decode(firstDecode, Base64.DEFAULT)
+
+                                    dummyClass.target =
+                                        secondDecode.toString(Charset.defaultCharset())
+                                    println("Decoded")
+                                    println(dummyClass.target)
+                                }
+
+                                handleSuccess(id, timestamp)
+                            } else {
+                                handleOnHttpError(id, response.code(), timestamp)
+                            }
+                        }, onFailure = { error -> handleFailure(id, timestamp, error) })
+            }
+        }
+        getResults(tasks.awaitAll())
+    }
+
+    private fun getResults(allResults: List<RequestResult>): Results {
+        return Results(
             success = allResults.count { it.success },
             failures = allResults.count { !it.success },
             requestResult = allResults
         )
     }
 
-    override suspend fun slowerFlow(requestAmount: Int): Results {
-        TODO("Not yet implemented")
+    private fun getTotalTime(start: Int): Int {
+        val end = (System.currentTimeMillis() / 1000).toInt()
+        return end - start
+
+    }
+
+    private fun handleOnHttpError(id: Int, errorCode: Int, timestamp: Int): RequestResult {
+        return RequestResult(
+            id = id,
+            detail = "HTTP Error: $errorCode",
+            timestamp = timestamp,
+            totalTime = getTotalTime(timestamp),
+            success = false
+        )
+    }
+
+    private fun handleFailure(id: Int, timestamp: Int, error: Throwable): RequestResult {
+        return RequestResult(
+            id = id,
+            detail = "Exception: ${error.localizedMessage}",
+            timestamp = timestamp,
+            totalTime = getTotalTime(timestamp),
+            success = false
+        )
+    }
+
+    private fun handleSuccess(id: Int, timestamp: Int): RequestResult {
+        return RequestResult(
+            id = id,
+            //TODO may be good to add some extra stuff
+            detail = "Success:",
+            timestamp = timestamp,
+            totalTime = getTotalTime(timestamp),
+            success = true
+        )
     }
 
 }

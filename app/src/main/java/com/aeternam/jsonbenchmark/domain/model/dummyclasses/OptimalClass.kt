@@ -11,5 +11,6 @@ data class DummyClass(
     val foo4: String,
     val foo5: String,
     val foo6: String,
-    val target: String,
+    //This is var to allow reassign
+    var target: String,
 )

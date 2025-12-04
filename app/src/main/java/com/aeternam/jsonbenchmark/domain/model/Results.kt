@@ -5,4 +5,4 @@ data class Results(
     val failures: Int = 0, val requestResult: List<RequestResult> = listOf()
 )
 
-data class RequestResult(val id: Int, val detail : String , val timestamp : Int, val success: Boolean)
+data class RequestResult(val id: Int, val detail : String , val timestamp : Int, val success: Boolean,val totalTime : Int)

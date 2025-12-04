@@ -39,7 +39,7 @@ class RequestScreenViewmodel @Inject constructor(
         _state.value = RequestScreenState.Loading
         when (requestMode) {
             RequestMode.OPTIMAL -> optimalPath(requestAmount)
-            RequestMode.SLOWER -> slowerPath()
+            RequestMode.SLOWER -> slowerPath(requestAmount)
         }
     }
 
@@ -50,8 +50,11 @@ class RequestScreenViewmodel @Inject constructor(
         }
     }
 
-    private fun slowerPath() {
-
+    private fun slowerPath(requestAmount: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val results = repository.slowerFlow(requestAmount = requestAmount)
+            _state.value = RequestScreenState.ShowResults(results = results)
+        }
     }
 
 
