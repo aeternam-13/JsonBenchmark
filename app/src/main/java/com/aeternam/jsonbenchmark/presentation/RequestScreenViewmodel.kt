@@ -17,29 +17,32 @@ import javax.inject.Inject
 class RequestScreenViewmodel @Inject constructor(
     val repository: RequestDispatcherRepository
 ) : ViewModel() {
-    private val _state =
-        MutableStateFlow<RequestScreenState>(RequestScreenState.GatheringInfo)
+    private val _state = MutableStateFlow<RequestScreenState>(RequestScreenState.GatheringInfo)
     val state = _state.asStateFlow()
-
-    private val _uiEvent = MutableSharedFlow<RequestScreenState>()
-    val uiEvent: SharedFlow<RequestScreenState> = _uiEvent
+    private val _uiEvent = MutableSharedFlow<RequestScreenUiEvent>()
+    val uiEvent: SharedFlow<RequestScreenUiEvent> = _uiEvent
 
     fun onIntent(intent: RequestScreenIntent) {
         when (intent) {
             is RequestScreenIntent.SendRequests -> sendRequest(
-                intent.requestMode,
-                intent.amount.toInt()
+                intent.requestMode, intent.amount
             )
 
             is RequestScreenIntent.BackToSend -> _state.value = RequestScreenState.GatheringInfo
         }
     }
 
-    private fun sendRequest(requestMode: RequestMode, requestAmount: Int) {
+    private fun sendRequest(requestMode: RequestMode, requestAmount: String) {
+        if (requestAmount.isEmpty() || requestAmount.toInt() == 0) {
+            viewModelScope.launch { _uiEvent.emit(RequestScreenUiEvent.DisplayAlertDialog("Amount should be at least 1")) }
+            return
+        }
         _state.value = RequestScreenState.Loading
+
+        val amount = requestAmount.toInt()
         when (requestMode) {
-            RequestMode.OPTIMAL -> optimalPath(requestAmount)
-            RequestMode.SLOWER -> slowerPath(requestAmount)
+            RequestMode.OPTIMAL -> optimalPath(amount)
+            RequestMode.SLOWER -> slowerPath(amount)
         }
     }
 
@@ -56,6 +59,5 @@ class RequestScreenViewmodel @Inject constructor(
             _state.value = RequestScreenState.ShowResults(results = results)
         }
     }
-
 
 }

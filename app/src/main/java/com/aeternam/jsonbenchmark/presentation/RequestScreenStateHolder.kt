@@ -23,6 +23,21 @@ class RequestScreenStateHolder {
     var requestMode: RequestMode by mutableStateOf(RequestMode.OPTIMAL)
         private set
 
+    var showDialog: Boolean by mutableStateOf(false)
+        private set
+
+    var dialogMessage: String by mutableStateOf("")
+        private set
+
+    fun displayDialog(message: String) {
+        dialogMessage = message
+        showDialog = true
+    }
+
+    fun hideDialog() {
+        dialogMessage = ""
+        showDialog = false
+    }
 
     fun onAmountChange(amount: String) {
         this.requestAmount = amount

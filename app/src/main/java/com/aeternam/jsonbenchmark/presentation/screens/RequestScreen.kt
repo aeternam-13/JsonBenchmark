@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.MaterialTheme
@@ -24,9 +25,11 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aeternam.jsonbenchmark.presentation.RequestScreenIntent
 import com.aeternam.jsonbenchmark.presentation.RequestScreenState
+import com.aeternam.jsonbenchmark.presentation.RequestScreenUiEvent
 import com.aeternam.jsonbenchmark.presentation.RequestScreenViewmodel
 import com.aeternam.jsonbenchmark.presentation.rememberRequestScreenStateHolder
 import com.aeternam.jsonbenchmark.presentation.screens.floatingbuttons.CustomFloatingButton
+import kotlinx.coroutines.flow.collectLatest
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,6 +45,14 @@ fun RequestScreen(
             is RequestScreenState.GatheringInfo -> { stateHolder.clean() }
             is RequestScreenState.Loading -> {}
             is RequestScreenState.ShowResults -> {}
+        }
+    }
+
+    LaunchedEffect(key1 = true) {
+        viewmodel.uiEvent.collectLatest {
+            when (it) {
+                is RequestScreenUiEvent.DisplayAlertDialog -> stateHolder.displayDialog(it.message)
+            }
         }
     }
 
@@ -91,8 +102,19 @@ fun RequestScreen(
                     onRequestAmountChange = { newAmount -> stateHolder.onAmountChange(newAmount) },
                     onRequestModeChange = { mode -> stateHolder.onModeChange(mode) })
                 is RequestScreenState.Loading -> RequestScreenLoading()
-                is RequestScreenState.ShowResults -> RequestScreenResults(current.results , stateHolder.requestMode)
+                is RequestScreenState.ShowResults -> RequestScreenResults(
+                    current.results,
+                    stateHolder.requestMode
+                )
             }
+
+            if (stateHolder.showDialog)
+                AlertDialog(
+                    onDismissRequest = { stateHolder.hideDialog() },
+                    confirmButton = { /* ... */ },
+                    title = { Text("Heyyy!!!") },
+                    text = { Text(stateHolder.dialogMessage) }
+                )
         }
     }
 }
