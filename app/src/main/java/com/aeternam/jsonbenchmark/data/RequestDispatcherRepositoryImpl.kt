@@ -10,6 +10,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import android.util.Base64
+import java.lang.System
 import  java.nio.charset.Charset
 
 class RequestDispatcherRepositoryImpl(
@@ -19,7 +20,7 @@ class RequestDispatcherRepositoryImpl(
     override suspend fun optimalFlow(requestAmount: Int): Results = coroutineScope {
         val tasks: List<Deferred<RequestResult>> = (1..requestAmount).map { id ->
             async {
-                val timestamp = (System.currentTimeMillis() / 1000).toInt()
+                val timestamp = System.currentTimeMillis()
                 runCatching { api.optimalPost() }
                     .fold(
                         onSuccess = { response ->
@@ -46,7 +47,7 @@ class RequestDispatcherRepositoryImpl(
     override suspend fun slowerFlow(requestAmount: Int): Results = coroutineScope {
         val tasks: List<Deferred<RequestResult>> = (1..requestAmount).map { id ->
             async {
-                val timestamp = (System.currentTimeMillis() / 1000).toInt()
+                val timestamp = System.currentTimeMillis()
                 runCatching { api.slowerPost() }
                     .fold(
                         onSuccess = { response ->
@@ -83,13 +84,12 @@ class RequestDispatcherRepositoryImpl(
         )
     }
 
-    private fun getTotalTime(start: Int): Int {
-        val end = (System.currentTimeMillis() / 1000).toInt()
+    private fun getTotalTime(start: Long): Long {
+        val end = System.currentTimeMillis()
         return end - start
-
     }
 
-    private fun handleOnHttpError(id: Int, errorCode: Int, timestamp: Int): RequestResult {
+    private fun handleOnHttpError(id: Int, errorCode: Int, timestamp: Long): RequestResult {
         return RequestResult(
             id = id,
             detail = "HTTP Error: $errorCode",
@@ -99,7 +99,7 @@ class RequestDispatcherRepositoryImpl(
         )
     }
 
-    private fun handleFailure(id: Int, timestamp: Int, error: Throwable): RequestResult {
+    private fun handleFailure(id: Int, timestamp: Long, error: Throwable): RequestResult {
         return RequestResult(
             id = id,
             detail = "Exception: ${error.localizedMessage}",
@@ -109,11 +109,11 @@ class RequestDispatcherRepositoryImpl(
         )
     }
 
-    private fun handleSuccess(id: Int, timestamp: Int): RequestResult {
+    private fun handleSuccess(id: Int, timestamp: Long): RequestResult {
         return RequestResult(
             id = id,
             //TODO may be good to add some extra stuff
-            detail = "Success:",
+            detail = "Success",
             timestamp = timestamp,
             totalTime = getTotalTime(timestamp),
             success = true

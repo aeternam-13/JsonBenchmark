@@ -93,8 +93,6 @@ fun RequestScreen(
             modifier = Modifier
                 .padding(innerPadding)
                 .padding(all = 16.dp)
-
-
         ) {
             when (val current = state) {
                 is RequestScreenState.GatheringInfo -> RequestScreenGatheringInfo(
