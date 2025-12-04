@@ -23,15 +23,9 @@ class RequestScreenStateHolder {
     var requestMode: RequestMode by mutableStateOf(RequestMode.OPTIMAL)
         private set
 
-    var results: Results by mutableStateOf(Results())
-        private set
 
     fun onAmountChange(amount: String) {
         this.requestAmount = amount
-    }
-
-    fun onResultsChange(results: Results) {
-        this.results = results
     }
 
     fun onModeChange(requestMode: RequestMode) {
@@ -39,7 +33,6 @@ class RequestScreenStateHolder {
     }
 
     fun clean() {
-        results = Results()
         requestMode = RequestMode.OPTIMAL
         requestAmount = ""
     }

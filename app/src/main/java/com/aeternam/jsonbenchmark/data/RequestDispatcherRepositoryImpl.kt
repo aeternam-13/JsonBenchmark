@@ -2,7 +2,9 @@ package com.aeternam.jsonbenchmark.data
 
 import com.aeternam.jsonbenchmark.domain.model.RequestResult
 import com.aeternam.jsonbenchmark.domain.model.Results
+import com.aeternam.jsonbenchmark.domain.model.dummyclasses.DummyClass
 import com.aeternam.jsonbenchmark.domain.repository.RequestDispatcherRepository
+import com.google.gson.Gson
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -12,6 +14,7 @@ class RequestDispatcherRepositoryImpl(
     val api : RequestDispatcherApi
 ) : RequestDispatcherRepository {
     override suspend fun optimalFlow(requestAmount: Int): Results = coroutineScope {
+        val gson = Gson()
         val tasks: List<Deferred<RequestResult>> = (1..requestAmount).map { id ->
             async {
                 val timestamp = (System.currentTimeMillis() / 1000).toInt()
@@ -19,6 +22,10 @@ class RequestDispatcherRepositoryImpl(
                     .fold(
                     onSuccess = { response ->
                         if (response.isSuccessful) {
+                            response.body()?.let {
+                                val dummyClass = gson.fromJson(it, DummyClass::class.java)
+                                println(dummyClass.foo1)
+                            }
                             RequestResult(
                                 id = id,
                                 detail = "Success: ${response.body()}",

@@ -6,10 +6,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -18,7 +16,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.material3.Icon
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -41,10 +38,10 @@ fun RequestScreen(
     val stateHolder = rememberRequestScreenStateHolder()
 
     LaunchedEffect(state) {
-        when (val current = state) {
+        when (state) {
             is RequestScreenState.GatheringInfo -> { stateHolder.clean() }
             is RequestScreenState.Loading -> {}
-            is RequestScreenState.ShowResults -> stateHolder.onResultsChange(current.results)
+            is RequestScreenState.ShowResults -> {}
         }
     }
 
@@ -88,13 +85,13 @@ fun RequestScreen(
 
 
         ) {
-            when (state) {
+            when (val current = state) {
                 is RequestScreenState.GatheringInfo -> RequestScreenGatheringInfo(
                     stateHolder = stateHolder,
                     onRequestAmountChange = { newAmount -> stateHolder.onAmountChange(newAmount) },
                     onRequestModeChange = { mode -> stateHolder.onModeChange(mode) })
                 is RequestScreenState.Loading -> RequestScreenLoading()
-                is RequestScreenState.ShowResults -> RequestScreenResults(stateHolder)
+                is RequestScreenState.ShowResults -> RequestScreenResults(current.results , stateHolder.requestMode)
             }
         }
     }
