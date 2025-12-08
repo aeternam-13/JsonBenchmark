@@ -10,34 +10,34 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import android.util.Base64
+import com.aeternam.jsonbenchmark.domain.model.dummyclasses.DeeperTarget
+import com.aeternam.jsonbenchmark.domain.model.dummyclasses.DummySlowerClass
+import com.aeternam.jsonbenchmark.domain.model.dummyclasses.InnerTarget
+import com.aeternam.jsonbenchmark.domain.model.dummyclasses.SlowerInnerTarget
+import com.google.gson.JsonElement
 import java.lang.System
-import  java.nio.charset.Charset
+import java.nio.charset.Charset
 
 class RequestDispatcherRepositoryImpl(
-    val api: RequestDispatcherApi,
-    val gson: Gson = Gson()
+    val api: RequestDispatcherApi, val gson: Gson = Gson()
 ) : RequestDispatcherRepository {
     override suspend fun optimalFlow(requestAmount: Int): Results = coroutineScope {
         val tasks: List<Deferred<RequestResult>> = (1..requestAmount).map { id ->
             async {
                 val timestamp = System.currentTimeMillis()
-                runCatching { api.optimalPost() }
-                    .fold(
-                        onSuccess = { response ->
-                            if (response.isSuccessful) {
-                                response.body()?.let {
-                                    val dummyClass = gson.fromJson(it, DummyClass::class.java)
-                                    println(dummyClass.foo1)
-                                }
-                                handleSuccess(id, timestamp)
-                            } else {
-                                handleOnHttpError(id, response.code(), timestamp)
+                runCatching { api.optimalPost() }.fold(onSuccess = { response ->
+                        if (response.isSuccessful) {
+                            response.body()?.let {
+                                val dummyClass = gson.fromJson(it, DummyClass::class.java)
+                                println(dummyClass.foo1)
                             }
-                        },
-                        onFailure = { error ->
-                            handleFailure(id, timestamp, error)
+                            handleSuccess(id, timestamp)
+                        } else {
+                            handleOnHttpError(id, response.code(), timestamp)
                         }
-                    )
+                    }, onFailure = { error ->
+                        handleFailure(id, timestamp, error)
+                    })
             }
         }
 
@@ -48,29 +48,52 @@ class RequestDispatcherRepositoryImpl(
         val tasks: List<Deferred<RequestResult>> = (1..requestAmount).map { id ->
             async {
                 val timestamp = System.currentTimeMillis()
-                runCatching { api.slowerPost() }
-                    .fold(
-                        onSuccess = { response ->
-                            if (response.isSuccessful) {
-                                response.body()?.let {
-                                    val dummyClass = gson.fromJson(it, DummyClass::class.java)
-                                    println(dummyClass.foo1)
+                runCatching { api.slowerPost() }.fold(onSuccess = { response ->
+                    if (response.isSuccessful) {
 
-                                    val firstDecode =
-                                        Base64.decode(dummyClass.target, Base64.DEFAULT)
-                                    val secondDecode = Base64.decode(firstDecode, Base64.DEFAULT)
+                        val body: JsonElement? = response.body()
+                        body?.let {
+                            val dummySlowerClass = gson.fromJson(it, DummySlowerClass::class.java)
 
-                                    dummyClass.target =
-                                        secondDecode.toString(Charset.defaultCharset())
-                                    println("Decoded")
-                                    println(dummyClass.target)
-                                }
+                            val firstDecode =
+                                Base64.decode(dummySlowerClass.target, Base64.DEFAULT).toString(
+                                    Charset.defaultCharset()
+                                )
 
-                                handleSuccess(id, timestamp)
-                            } else {
-                                handleOnHttpError(id, response.code(), timestamp)
-                            }
-                        }, onFailure = { error -> handleFailure(id, timestamp, error) })
+                            val innerSlowerTarget =
+                                gson.fromJson(firstDecode, SlowerInnerTarget::class.java)
+
+                            val secondDecode =
+                                Base64.decode(innerSlowerTarget.target, Base64.DEFAULT).toString(
+                                        Charset.defaultCharset()
+                                    )
+
+                            val deeperTarget = gson.fromJson(secondDecode, DeeperTarget::class.java)
+
+                            val innerTarget = InnerTarget(
+                                innerSlowerTarget.foo1,
+                                innerSlowerTarget.foo2,
+                                innerSlowerTarget.foo3,
+                                deeperTarget
+                            )
+
+                            val dummyClass = DummyClass(
+                                dummySlowerClass.foo1,
+                                dummySlowerClass.foo2,
+                                dummySlowerClass.foo3,
+                                dummySlowerClass.foo4,
+                                dummySlowerClass.foo5,
+                                dummySlowerClass.foo6,
+                                innerTarget
+                            )
+                            println("Decoded" + dummyClass.target.target.targetString)
+
+                        }
+                        handleSuccess(id, timestamp)
+                    } else {
+                        handleOnHttpError(id, response.code(), timestamp)
+                    }
+                }, onFailure = { error -> handleFailure(id, timestamp, error) })
             }
         }
         getResults(tasks.awaitAll())
